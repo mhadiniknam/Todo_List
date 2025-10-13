@@ -50,9 +50,7 @@ class CLI:
         print("\nAvailable commands:")
         print("  create-project <name> <desc>                   - Create a new project")
         print("  edit-project <prev_name> <new_name> <new_desc> - Create a new project")
-        print(
-            "  add-task <project> <title> <desc>              - Add a task to a project"
-        )
+        print("  add-task <project> <title> <desc> <deadline-ARB> <status>  - Add a task to a project")
         print("  list-projects                                  - List all projects")
         print(
             "  list-tasks <project>                           - List tasks in a project"
@@ -93,8 +91,26 @@ class CLI:
         except ValueError as e:
             print(f"❌ Error: {e}")
 
-    def add_task(self):
-        pass
+    def add_task(self, args):
+        """Add a task to a project."""
+        if len(args) < 4:
+            print("Usage: add-task <project> <title> <desc> <deadline-ARB> <status>")
+            return
+
+        project_name = args[0]
+        task_title = args[1]
+        task_desc = args[2]
+        task_deadline = args[3]
+        if len(args) == 5 : 
+            status = args[4]
+        else :
+            status = None 
+
+        try:
+            self.storage.add_task(project_name, task_title, task_desc, task_deadline , status)
+        except ValueError as e:
+            print(f"❌ Error: {e}")
+
 
     def list_projects(self):
         pass

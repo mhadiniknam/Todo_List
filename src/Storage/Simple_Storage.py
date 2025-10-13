@@ -65,3 +65,29 @@ class SimpleStorage:
             print(f"✅ Project '{name}' deleted successfully.")
         else:
             print(f"❌ Error: the {name} does not exists") 
+
+    def add_task(self, project_name: str, title: str, description: str, deadline: str , status: str):
+        if project_name not in self._projects:
+            print(f"❌ Error: Project '{project_name}' does not exist.")
+            return False
+        
+        if ((status != "todo") and (status != "doing") and ( status != "done") and (status != None )):
+            print(f"❌ Error: status could be only todo, doing, done'.")
+            return False
+
+        project_data = self._projects[project_name]
+
+        description_key = next(iter(project_data))
+        tasks = project_data[description_key]
+
+        if len(tasks) >= self.tasks_limits:
+            print(f"❌ Error: Task limit reached for project '{project_name}'.")
+            return False
+
+        if status == None :
+            new_task = Task(title=title, description=description, deadline=deadline)
+        else :
+            new_task = Task(title=title, description=description, deadline=deadline,status = status)
+        tasks.append(new_task)
+
+        return True
