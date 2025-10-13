@@ -2,6 +2,7 @@ from typing import Dict, List
 from ..Task.Task import Task
 from dotenv import load_dotenv
 import os
+import datetime
 
 load_dotenv()
 
@@ -132,3 +133,57 @@ class SimpleStorage:
         print(f"❌ Error: Task titled '{task_title}' not found in project '{project_name}'.")
         return False
 
+
+    def edit_task(
+        self,
+        project_name: str,
+        task_title: str,
+        new_title: str,
+        new_description: str,
+        new_deadline: str,
+        new_status: str,
+    ) -> bool:
+        # Validate project exists
+        if project_name not in self._projects:
+            print(f"❌ Error: Project '{project_name}' does not exist.")
+            return False
+
+        # Validate status
+        valid_statuses = {"todo", "doing", "done"}
+        if new_status not in valid_statuses:
+            print(f"❌ Error: status must be one of {valid_statuses}")
+            return False
+
+        # Validate length limits
+        if len(new_title.strip()) > 30:
+            print("❌ Error: Title can not be more than 30 characters.")
+            return False
+
+        if len(new_description.strip()) > 150:
+            print("❌ Error: Description can not be more than 150 characters.")
+            return False
+
+        # Validate deadline format (example: YYYY-MM-DD)
+        try:
+            datetime.datetime.strptime(new_deadline, "%Y-%m-%d")
+        except ValueError:
+            print("❌ Error: Deadline must be in YYYY-MM-DD format.")
+            return False
+
+        project_data = self._projects[project_name]
+        description_key = next(iter(project_data))
+        tasks = project_data[description_key]
+
+        # Find task by title
+        for task in tasks:
+            if task.title == task_title:
+                # Update task fields
+                task.title = new_title
+                task.description = new_description
+                task.deadline = new_deadline
+                task.status = new_status
+                print(f"✅ Task '{task_title}' updated successfully.")
+                return True
+
+        print(f"❌ Error: Task titled '{task_title}' not found in project '{project_name}'.")
+        return False
