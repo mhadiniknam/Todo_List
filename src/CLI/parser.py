@@ -1,8 +1,11 @@
 import argparse
+from src.Storage.Simple_Storage import SimpleStorage
 
 
 class CLI:
     def __init__(self):
+        self.storage = SimpleStorage()
+
         self.commands = {
             "help": self.show_help,
             "create-project": self.create_project,
@@ -54,8 +57,20 @@ class CLI:
         print("  help                               - Show this help message")
         print("  exit                               - Exit the application")
 
-    def create_project(self):
-        pass
+    def create_project(self, args):
+        """Create a new project."""
+        if len(args) < 1:
+            print("Usage: create-project <name>")
+            return
+        
+        name = ' '.join(args)
+        try:
+            if self.storage.create_project(name):
+                print(f"✅ Project '{name}' created successfully.")
+            else:
+                print(f"❌ Project '{name}' already exists.")
+        except ValueError as e:
+            print(f"❌ Error: {e}")
 
     def add_task(self):
         pass
