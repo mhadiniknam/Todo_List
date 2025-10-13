@@ -10,7 +10,7 @@ class CLI:
             "help": self.show_help,
             "create-project": self.create_project,
             "edit-project": self.edit_project,
-            "edit-task":self.edit_task,
+            "edit-task": self.edit_task,
             "add-task": self.add_task,
             "list-projects": self.list_projects,
             "list-tasks": self.list_tasks,
@@ -51,7 +51,9 @@ class CLI:
         print("\nAvailable commands:")
         print("  create-project <name> <desc>                   - Create a new project")
         print("  edit-project <prev_name> <new_name> <new_desc> - Create a new project")
-        print("edit-task <project> <task_title> <new_title> <new_desc> <new_deadline> <new_status> - Edit a Task")
+        print(
+            "edit-task <project> <task_title> <new_title> <new_desc> <new_deadline> <new_status> - Edit a Task"
+        )
         print(
             "  add-task <project> <title> <desc> <deadline-ARB> <status>  - Add a task to a project"
         )
@@ -148,7 +150,6 @@ class CLI:
         if not success:
             print("❌ Failed to delete task.")
 
-
     def update_task_status(self, args):
         if len(args) != 3:
             print("Usage: update-task <project> <task_title> <status>")
@@ -164,7 +165,9 @@ class CLI:
 
     def edit_task(self, args):
         if len(args) != 6:
-            print("Usage: edit-task <project> <task_title> <new_title> <new_desc> <new_deadline> <new_status>")
+            print(
+                "Usage: edit-task <project> <task_title> <new_title> <new_desc> <new_deadline> <new_status>"
+            )
             return
 
         project_name = args[0]
@@ -175,11 +178,15 @@ class CLI:
         new_status = args[5]
 
         success = self.storage.edit_task(
-            project_name, task_title, new_title, new_description, new_deadline, new_status
+            project_name,
+            task_title,
+            new_title,
+            new_description,
+            new_deadline,
+            new_status,
         )
         if not success:
             print("❌ Failed to edit task.")
-
 
     def exit_cli(self, args):
         """Exit the REPL."""

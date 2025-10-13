@@ -105,18 +105,22 @@ class SimpleStorage:
             new_task = Task(
                 title=title, description=description, deadline=deadline, status=status
             )
-        print(f"✅ Task '{title}' created .") 
+        print(f"✅ Task '{title}' created .")
         tasks.append(new_task)
 
         return True
 
-    def update_task_status(self, project_name: str, task_title: str, new_status: str) -> bool:
+    def update_task_status(
+        self, project_name: str, task_title: str, new_status: str
+    ) -> bool:
         if project_name not in self._projects:
             print(f"❌ Error: Project '{project_name}' does not exist.")
             return False
 
         if new_status not in ("todo", "doing", "done"):
-            print(f"❌ Error: Invalid status '{new_status}'. Must be one of: todo, doing, done.")
+            print(
+                f"❌ Error: Invalid status '{new_status}'. Must be one of: todo, doing, done."
+            )
             return False
 
         project_data = self._projects[project_name]
@@ -127,12 +131,15 @@ class SimpleStorage:
         for task in tasks:
             if task.title == task_title:
                 task.status = new_status
-                print(f"✅ Task '{task_title}' status updated to '{new_status}' in project '{project_name}'.")
+                print(
+                    f"✅ Task '{task_title}' status updated to '{new_status}' in project '{project_name}'."
+                )
                 return True
 
-        print(f"❌ Error: Task titled '{task_title}' not found in project '{project_name}'.")
+        print(
+            f"❌ Error: Task titled '{task_title}' not found in project '{project_name}'."
+        )
         return False
-
 
     def edit_task(
         self,
@@ -185,7 +192,9 @@ class SimpleStorage:
                 print(f"✅ Task '{task_title}' updated successfully.")
                 return True
 
-        print(f"❌ Error: Task titled '{task_title}' not found in project '{project_name}'.")
+        print(
+            f"❌ Error: Task titled '{task_title}' not found in project '{project_name}'."
+        )
         return False
 
     def delete_task(self, project_name: str, task_title: str) -> bool:
@@ -202,8 +211,12 @@ class SimpleStorage:
         for i, task in enumerate(tasks):
             if task.title == task_title:
                 del tasks[i]
-                print(f"✅ Task '{task_title}' deleted successfully from project '{project_name}'.")
+                print(
+                    f"✅ Task '{task_title}' deleted successfully from project '{project_name}'."
+                )
                 return True
 
-        print(f"❌ Error: Task with title '{task_title}' not found in project '{project_name}'.")
+        print(
+            f"❌ Error: Task with title '{task_title}' not found in project '{project_name}'."
+        )
         return False
