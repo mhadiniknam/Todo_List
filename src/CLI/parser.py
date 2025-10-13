@@ -47,7 +47,7 @@ class CLI:
     def show_help(self, args):
         """Show available commands."""
         print("\nAvailable commands:")
-        print("  create-project <name>                          - Create a new project")
+        print("  create-project <name> <desc>                   - Create a new project")
         print("  edit-project <prev_name> <new_name> <new_desc> - Create a new project")
         print(
             "  add-task <project> <title> <desc>              - Add a task to a project"
