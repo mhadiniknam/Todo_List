@@ -1,7 +1,7 @@
 from src.project import *
 from src.Task import * 
-from CLI.parser import CLI 
-from CLI.commands import *
+from src.CLI.parser import CLI 
+from src.CLI.commands import *
 import argparse
 
 
@@ -19,10 +19,7 @@ poetry run main.py create_task ....
 def main():
     # ___ Parser Part ____
     cli = CLI()
-    parser = cli.create_parser()
-    args = parser.parse_args()
-    # ___ Executive Part ___
-    cli.exec_command(args)
+    cli.start()
 
 
 if __name__ == "__main__":

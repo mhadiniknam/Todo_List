@@ -1,6 +1,5 @@
 from .parser import CLI 
 
-def exec_command(args):
-    pass 
-
-CLI.exec_command = exec_command
+"""
+Here we will make a wraper for each command 
+"""
