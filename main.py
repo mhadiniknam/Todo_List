@@ -1,4 +1,3 @@
-from src.project import *
 from src.Task import * 
 from src.CLI.parser import CLI 
 from src.CLI.commands import *
