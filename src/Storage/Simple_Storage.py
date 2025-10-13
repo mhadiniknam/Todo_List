@@ -20,11 +20,11 @@ class SimpleStorage:
 
     def create_project(self, name: str, desc_name: str):
 
-        if len(name.strip) > 30:
+        if len(name.strip()) > 30:
             print(f"❌ Error: The name can not be more than 30 word")
             return False
 
-        if len(desc_name.strip) > 150:
+        if len(desc_name.strip()) > 150:
             print(f"❌ Error: The desciption can not be more than 30 word")
             return False
 
@@ -33,17 +33,17 @@ class SimpleStorage:
             return False
 
         if len(self._projects) <= self.projects_limit:
-            self._projects[name] = {desc_name, []}
+            self._projects[name] = {desc_name : []}
             print(f"✅ Project '{name}' created successfully.")
             return True
 
     def edit_project(self, prev_name: str, new_name: str, new_desc: str) -> bool:
 
-        if len(new_name.strip) > 30:
+        if len(new_name.strip()) > 30:
             print(f"❌ Error: The name can not be more than 30 word")
             return False
 
-        if len(new_desc.strip) > 150:
+        if len(new_desc.strip()) > 150:
             print(f"❌ Error: The desciption can not be more than 30 word")
             return False
 
@@ -53,8 +53,8 @@ class SimpleStorage:
 
         if prev_name in self._projects:
             del self._projects[prev_name]
-            self._projects[new_name] = {new_desc, []}
-            print(f"✅ Project '{new_name}' created successfully.")
+            self._projects[new_name] = {new_desc : []}
+            print(f"✅ Project '{prev_name}' updated to '{new_name}' created successfully.")
             return True
         else:
             print(f"❌ Error: the {prev_name} does not exists")

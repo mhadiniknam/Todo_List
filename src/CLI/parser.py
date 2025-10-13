@@ -9,6 +9,7 @@ class CLI:
         self.commands = {
             "help": self.show_help,
             "create-project": self.create_project,
+            "edit-project" : self.edit_project,
             "add-task": self.add_task,
             "list-projects": self.list_projects,
             "list-tasks": self.list_tasks,
@@ -79,7 +80,7 @@ class CLI:
 
     def edit_project(self, args):
         """Create a new project."""
-        if len(args) < 1:
+        if len(args) != 3:
             print("Usage: create-project <name>")
             return
 
