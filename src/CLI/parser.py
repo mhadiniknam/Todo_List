@@ -130,7 +130,6 @@ class CLI:
         project_name = args[0]
         self.storage.list_tasks(project_name)
 
-
     def delete_project(self, args):
         """Delete a project."""
         if len(args) < 1:
