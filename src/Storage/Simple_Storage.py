@@ -233,3 +233,22 @@ class SimpleStorage:
         ):
             description = next(iter(project_data))  # The description key
             print(f"ID: {index} | Name: {project_name} | Description: {description}")
+
+    def list_tasks(self, project_name: str):
+        if project_name not in self._projects:
+            print(f"❌ Error: Project '{project_name}' does not exist.")
+            return
+
+        project_data = self._projects[project_name]
+        description_key = next(iter(project_data))
+        tasks = project_data[description_key]
+
+        if not tasks:
+            print(f"No tasks found in project '{project_name}'.")
+            return
+
+        print(f"Tasks for project '{project_name}':")
+        for idx, task in enumerate(tasks, 1):
+            print(
+                f"ID: {idx} | Title: {task.title} | Status: {task.status} | Deadline: {task.deadline}"
+            )

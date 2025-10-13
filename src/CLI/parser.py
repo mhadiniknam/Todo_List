@@ -122,8 +122,14 @@ class CLI:
     def list_projects(self, args=None):
         self.storage.list_projects()
 
-    def list_tasks(self):
-        pass
+    def list_tasks(self, args):
+        if len(args) != 1:
+            print("Usage: list-tasks <project>")
+            return
+
+        project_name = args[0]
+        self.storage.list_tasks(project_name)
+
 
     def delete_project(self, args):
         """Delete a project."""
