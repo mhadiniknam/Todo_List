@@ -8,6 +8,6 @@ class SimpleStorage:
     Key: project name
     Value: list of tasks
     """
+
     def __init__(self):
         self._projects: Dict[project, List[Task]] = {}
-    
