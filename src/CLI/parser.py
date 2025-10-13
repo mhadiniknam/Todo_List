@@ -47,7 +47,7 @@ class CLI:
     def show_help(self, args):
         """Show available commands."""
         print("\nAvailable commands:")
-        print("  create-project <name>              - Create a new project")
+        print("  create-project <name> <desc>       - Create a new project")
         print("  add-task <project> <title> <desc>  - Add a task to a project")
         print("  list-projects                      - List all projects")
         print("  list-tasks <project>               - List tasks in a project")
@@ -61,14 +61,12 @@ class CLI:
         """Create a new project."""
         if len(args) < 1:
             print("Usage: create-project <name>")
-            return
+            return 
         
-        name = ' '.join(args)
+        name = args[0]
+        desc = args[1]
         try:
-            if self.storage.create_project(name):
-                print(f"✅ Project '{name}' created successfully.")
-            else:
-                print(f"❌ Project '{name}' already exists.")
+            self.storage.create_project(name,desc)
         except ValueError as e:
             print(f"❌ Error: {e}")
 
