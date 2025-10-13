@@ -58,3 +58,10 @@ class SimpleStorage:
             return True
         else:
             print(f"❌ Error: the {prev_name} does not exists")
+
+    def delete_project(self, name : str):
+        if name in self._projects:
+            del self._projects[name]
+            print(f"✅ Project '{name}' deleted successfully.")
+        else:
+            print(f"❌ Error: the {name} does not exists") 

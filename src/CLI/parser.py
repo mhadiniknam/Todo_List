@@ -81,7 +81,7 @@ class CLI:
     def edit_project(self, args):
         """Create a new project."""
         if len(args) != 3:
-            print("Usage: create-project <name>")
+            print("edit-project <prev_name> <new_name> <new_desc>")
             return
 
         prev_name = args[0]
@@ -102,8 +102,18 @@ class CLI:
     def list_tasks(self):
         pass
 
-    def delete_project(self):
-        pass
+    def delete_project(self,args):
+        """Delete a project."""
+        if len(args) < 1:
+            print("Usage: delete-project <project>")
+            return
+
+        name = args[0]
+
+        try:
+            self.storage.delete_project(name)
+        except ValueError as e:
+            print(f"❌ Error: {e}") 
 
     def delete_task(self):
         pass
