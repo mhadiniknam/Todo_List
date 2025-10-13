@@ -47,15 +47,16 @@ class CLI:
     def show_help(self, args):
         """Show available commands."""
         print("\nAvailable commands:")
-        print("  create-project <name> <desc>       - Create a new project")
-        print("  add-task <project> <title> <desc>  - Add a task to a project")
-        print("  list-projects                      - List all projects")
-        print("  list-tasks <project>               - List tasks in a project")
-        print("  delete-project <project>           - Delete a project")
-        print("  delete-task <project> <task_id>    - Delete a task")
-        print("  update-task <project> <task_id> <status> - Update task status")
-        print("  help                               - Show this help message")
-        print("  exit                               - Exit the application")
+        print("  create-project <name>                          - Create a new project")
+        print("  edit-project <prev_name> <new_name> <new_desc> - Create a new project")
+        print("  add-task <project> <title> <desc>              - Add a task to a project")
+        print("  list-projects                                  - List all projects")
+        print("  list-tasks <project>                           - List tasks in a project")
+        print("  delete-project <project>                       - Delete a project")
+        print("  delete-task <project> <task_id>                - Delete a task")
+        print("  update-task <project> <task_id> <status>       - Update task status")
+        print("  help                                           - Show this help message")
+        print("  exit                                           - Exit the application")
 
     def create_project(self, args):
         """Create a new project."""
@@ -68,7 +69,7 @@ class CLI:
         try:
             self.storage.create_project(name,desc)
         except ValueError as e:
-            print(f"❌ Error: {e}")
+            print(f"❌ Error: {e}") 
 
     def add_task(self):
         pass

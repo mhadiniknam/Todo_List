@@ -37,3 +37,9 @@ class SimpleStorage:
             print(f"✅ Project '{name}' created successfully.")
             return True
 
+    def edit_project(self,prev_name : str ,new_name : str ,new_desc : str ) -> bool:
+        flag = 0
+
+        if flag :
+            del self._projects[prev_name]
+        else :
