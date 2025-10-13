@@ -67,8 +67,8 @@ class CLI:
 
     def create_project(self, args):
         """Create a new project."""
-        if len(args) < 1:
-            print("Usage: create-project <name>")
+        if len(args) < 2:
+            print("Usage: create-project <name> <desc>")
             return
 
         name = args[0]
@@ -137,8 +137,19 @@ class CLI:
     def delete_task(self):
         pass
 
-    def update_task_status(self):
-        pass
+    def update_task_status(self, args):
+        if len(args) != 3:
+            print("Usage: update-task <project> <task_title> <status>")
+            return
+
+        project_name = args[0]
+        task_title = args[1]
+        new_status = args[2]
+
+        success = self.storage.update_task_status(project_name, task_title, new_status)
+        if not success:
+            print(f"❌ Failed to update task status.")
+
 
     def exit_cli(self, args):
         """Exit the REPL."""
