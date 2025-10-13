@@ -136,8 +136,18 @@ class CLI:
         except ValueError as e:
             print(f"❌ Error: {e}")
 
-    def delete_task(self):
-        pass
+    def delete_task(self, args):
+        if len(args) != 2:
+            print("Usage: delete-task <project> <task_title>")
+            return
+
+        project_name = args[0]
+        task_title = args[1]
+
+        success = self.storage.delete_task(project_name, task_title)
+        if not success:
+            print("❌ Failed to delete task.")
+
 
     def update_task_status(self, args):
         if len(args) != 3:

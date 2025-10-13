@@ -187,3 +187,23 @@ class SimpleStorage:
 
         print(f"❌ Error: Task titled '{task_title}' not found in project '{project_name}'.")
         return False
+
+    def delete_task(self, project_name: str, task_title: str) -> bool:
+        # Check if project exists
+        if project_name not in self._projects:
+            print(f"❌ Error: Project '{project_name}' does not exist.")
+            return False
+
+        project_data = self._projects[project_name]
+        description_key = next(iter(project_data))
+        tasks = project_data[description_key]
+
+        # Find and delete task with matching title
+        for i, task in enumerate(tasks):
+            if task.title == task_title:
+                del tasks[i]
+                print(f"✅ Task '{task_title}' deleted successfully from project '{project_name}'.")
+                return True
+
+        print(f"❌ Error: Task with title '{task_title}' not found in project '{project_name}'.")
+        return False
