@@ -33,10 +33,13 @@ class SimpleStorage:
             print(f"❌ Error: choose another name")
             return False
 
-        if len(self._projects) <= self.projects_limit:
+        if len(self._projects) < self.projects_limit:
             self._projects[name] = {desc_name: []}
             print(f"✅ Project '{name}' created successfully.")
             return True
+        else:
+            print(f"❌ Error: You pass the Projects limit")
+            return False
 
     def edit_project(self, prev_name: str, new_name: str, new_desc: str) -> bool:
 
