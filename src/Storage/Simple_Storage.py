@@ -220,3 +220,16 @@ class SimpleStorage:
             f"❌ Error: Task with title '{task_title}' not found in project '{project_name}'."
         )
         return False
+
+    def list_projects(self):
+        if not self._projects:
+            print("No projects found.")
+            return
+
+        print("Projects List:")
+        # Enumerate projects in order of insertion (order of creation)
+        for index, (project_name, project_data) in enumerate(
+            self._projects.items(), start=1
+        ):
+            description = next(iter(project_data))  # The description key
+            print(f"ID: {index} | Name: {project_name} | Description: {description}")

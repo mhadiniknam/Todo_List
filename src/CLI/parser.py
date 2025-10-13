@@ -119,8 +119,8 @@ class CLI:
         except ValueError as e:
             print(f"❌ Error: {e}")
 
-    def list_projects(self):
-        pass
+    def list_projects(self, args=None):
+        self.storage.list_projects()
 
     def list_tasks(self):
         pass
