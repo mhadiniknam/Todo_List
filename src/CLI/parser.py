@@ -49,27 +49,48 @@ class CLI:
         print("\nAvailable commands:")
         print("  create-project <name>                          - Create a new project")
         print("  edit-project <prev_name> <new_name> <new_desc> - Create a new project")
-        print("  add-task <project> <title> <desc>              - Add a task to a project")
+        print(
+            "  add-task <project> <title> <desc>              - Add a task to a project"
+        )
         print("  list-projects                                  - List all projects")
-        print("  list-tasks <project>                           - List tasks in a project")
+        print(
+            "  list-tasks <project>                           - List tasks in a project"
+        )
         print("  delete-project <project>                       - Delete a project")
         print("  delete-task <project> <task_id>                - Delete a task")
         print("  update-task <project> <task_id> <status>       - Update task status")
-        print("  help                                           - Show this help message")
+        print(
+            "  help                                           - Show this help message"
+        )
         print("  exit                                           - Exit the application")
 
     def create_project(self, args):
         """Create a new project."""
         if len(args) < 1:
             print("Usage: create-project <name>")
-            return 
-        
+            return
+
         name = args[0]
         desc = args[1]
         try:
-            self.storage.create_project(name,desc)
+            self.storage.create_project(name, desc)
         except ValueError as e:
-            print(f"❌ Error: {e}") 
+            print(f"❌ Error: {e}")
+
+    def edit_project(self, args):
+        """Create a new project."""
+        if len(args) < 1:
+            print("Usage: create-project <name>")
+            return
+
+        prev_name = args[0]
+        new_name = args[1]
+        desc = args[2]
+
+        try:
+            self.storage.edit_project(prev_name, new_name, desc)
+        except ValueError as e:
+            print(f"❌ Error: {e}")
 
     def add_task(self):
         pass
