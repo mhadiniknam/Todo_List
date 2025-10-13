@@ -33,7 +33,7 @@ class SimpleStorage:
             return False
 
         if len(self._projects) <= self.projects_limit:
-            self._projects[name] = {desc_name : []}
+            self._projects[name] = {desc_name: []}
             print(f"✅ Project '{name}' created successfully.")
             return True
 
@@ -53,25 +53,39 @@ class SimpleStorage:
 
         if prev_name in self._projects:
             del self._projects[prev_name]
-            self._projects[new_name] = {new_desc : []}
-            print(f"✅ Project '{prev_name}' updated to '{new_name}' created successfully.")
+            self._projects[new_name] = {new_desc: []}
+            print(
+                f"✅ Project '{prev_name}' updated to '{new_name}' created successfully."
+            )
             return True
         else:
             print(f"❌ Error: the {prev_name} does not exists")
 
-    def delete_project(self, name : str):
+    def delete_project(self, name: str):
         if name in self._projects:
             del self._projects[name]
             print(f"✅ Project '{name}' deleted successfully.")
         else:
-            print(f"❌ Error: the {name} does not exists") 
+            print(f"❌ Error: the {name} does not exists")
 
-    def add_task(self, project_name: str, title: str, description: str, deadline: str , status: str):
+    def add_task(
+        self,
+        project_name: str,
+        title: str,
+        description: str,
+        deadline: str,
+        status: str,
+    ):
         if project_name not in self._projects:
             print(f"❌ Error: Project '{project_name}' does not exist.")
             return False
-        
-        if ((status != "todo") and (status != "doing") and ( status != "done") and (status != None )):
+
+        if (
+            (status != "todo")
+            and (status != "doing")
+            and (status != "done")
+            and (status != None)
+        ):
             print(f"❌ Error: status could be only todo, doing, done'.")
             return False
 
@@ -84,10 +98,12 @@ class SimpleStorage:
             print(f"❌ Error: Task limit reached for project '{project_name}'.")
             return False
 
-        if status == None :
+        if status == None:
             new_task = Task(title=title, description=description, deadline=deadline)
-        else :
-            new_task = Task(title=title, description=description, deadline=deadline,status = status)
+        else:
+            new_task = Task(
+                title=title, description=description, deadline=deadline, status=status
+            )
         tasks.append(new_task)
 
         return True

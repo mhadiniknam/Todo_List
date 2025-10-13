@@ -9,7 +9,7 @@ class CLI:
         self.commands = {
             "help": self.show_help,
             "create-project": self.create_project,
-            "edit-project" : self.edit_project,
+            "edit-project": self.edit_project,
             "add-task": self.add_task,
             "list-projects": self.list_projects,
             "list-tasks": self.list_tasks,
@@ -50,7 +50,9 @@ class CLI:
         print("\nAvailable commands:")
         print("  create-project <name> <desc>                   - Create a new project")
         print("  edit-project <prev_name> <new_name> <new_desc> - Create a new project")
-        print("  add-task <project> <title> <desc> <deadline-ARB> <status>  - Add a task to a project")
+        print(
+            "  add-task <project> <title> <desc> <deadline-ARB> <status>  - Add a task to a project"
+        )
         print("  list-projects                                  - List all projects")
         print(
             "  list-tasks <project>                           - List tasks in a project"
@@ -101,16 +103,17 @@ class CLI:
         task_title = args[1]
         task_desc = args[2]
         task_deadline = args[3]
-        if len(args) == 5 : 
+        if len(args) == 5:
             status = args[4]
-        else :
-            status = None 
+        else:
+            status = None
 
         try:
-            self.storage.add_task(project_name, task_title, task_desc, task_deadline , status)
+            self.storage.add_task(
+                project_name, task_title, task_desc, task_deadline, status
+            )
         except ValueError as e:
             print(f"❌ Error: {e}")
-
 
     def list_projects(self):
         pass
@@ -118,7 +121,7 @@ class CLI:
     def list_tasks(self):
         pass
 
-    def delete_project(self,args):
+    def delete_project(self, args):
         """Delete a project."""
         if len(args) < 1:
             print("Usage: delete-project <project>")
@@ -129,7 +132,7 @@ class CLI:
         try:
             self.storage.delete_project(name)
         except ValueError as e:
-            print(f"❌ Error: {e}") 
+            print(f"❌ Error: {e}")
 
     def delete_task(self):
         pass
