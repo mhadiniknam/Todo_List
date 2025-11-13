@@ -4,14 +4,9 @@ from repositories.base_repository import BaseRepository
 
 class ProjectRepository(BaseRepository[Project]):
     """
-    Repository for all database operations related to the Project model.
+    Repository for all data access logic related to Projects.
     """
     def __init__(self, db_session: Session):
-        # The 'super()' call initializes the BaseRepository with the Project model
-        # and the database session.
+        # This initializes the BaseRepository with the Project model
+        # and the database session, giving it all the basic CRUD methods.
         super().__init__(model=Project, db_session=db_session)
-
-    # We are going to add project-specific methods here later if needed.
-    # For example:
-    # def find_by_name(self, name: str) -> Project | None:
-    #     return self.db_session.query(Project).filter(Project.name == name).first()
