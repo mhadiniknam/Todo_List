@@ -35,3 +35,7 @@ class BaseRepository(Generic[ModelType]):
         self.db_session.commit()
         self.db_session.refresh(db_item)
         return db_item
+
+    def count(self) -> int:
+        """Counts the total number of records for the model."""
+        return self.db_session.query(self.model).count()
