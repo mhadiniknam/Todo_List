@@ -30,6 +30,7 @@ black = "^24.4.2"
 flake8 = "^7.0.0"
 isort = "^5.13.2"
 mypy = "^1.10.0"
+alembic = "^1.13.1"
 
 # This section is required by Python's build system
 [build-system]
