@@ -1,40 +1,62 @@
-[project]
+# This section defines your project's metadata for Poetry
+[tool.poetry]
 name = "TodoList"
 version = "0.1.0"
 description = "A Minimal CLI Todo"
-authors = [
-    {name = "Mohammad hadi Niknam", email = "niknam@aut.ac.ir"}
-]
+authors = ["Mohammad hadi Niknam <niknam@aut.ac.ir>"]
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = ["python-dotenv (>=1.1.1,<2.0.0)"]
-
-[tool.poetry]
+# This section includes each of your modules from the 'src' directory
 packages = [
-            {include = "project", from = "src"},
-            {include = "Task",  from = "src"},
-            {include = "CLI" , from = "src"}
+    {include = "cli", from = "src"},
+    {include = "commands", from = "src"},
+    {include = "db", from = "src"},
+    {include = "exceptions", from = "src"},
+    {include = "models", from = "src"},
+    {include = "repositories", from = "src"},
+    {include = "services", from = "src"}
 ]
 
+# These are the dependencies your application needs to run
+[tool.poetry.dependencies]
+# The python version is correctly placed here
+python = ">=3.13"
+python-dotenv = "^1.0.1"
+sqlalchemy = "^2.0.30"
+psycopg2-binary = "^2.9.9"
+
+# These are your development tools, including formatters and type checkers
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+flake8 = "^7.0.0"
+isort = "^5.13.2"
+mypy = "^1.10.0"
+
+# This section is required by Python's build system
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[dependency-groups]
-dev = [
-    "flake8 (>=7.3.0,<8.0.0)",
-    "black (>=25.9.0,<26.0.0)",
-    "isort (>=7.0.0,<8.0.0)"
-]
+# --- Tool Configurations ---
 
+# Configuration for the Black code formatter
 [tool.black]
 line-length = 88
-target-version = ["py313"]  # set to your Python version, e.g. py39, py310, py311
+target-version = ["py313"]
 
+# Configuration for the isort import sorter
 [tool.isort]
 profile = "black"
 line_length = 88
 
+# Configuration for the flake8 linter
 [tool.flake8]
 max-line-length = 88
-extend-ignore = ["E203", "W503"]
+extend-ignore = ["E203"] # Ignore rule that conflicts with Black
+
+# Configuration for the mypy static type checker
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+mypy_path = "src"
