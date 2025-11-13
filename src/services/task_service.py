@@ -1,4 +1,5 @@
 import os
+import datetime
 from dotenv import load_dotenv
 from repositories.task_repository import TaskRepository
 from repositories.project_repository import ProjectRepository
@@ -6,50 +7,91 @@ from models.task import Task
 
 load_dotenv()
 MAX_NUMBER_OF_TASK = int(os.getenv("MAX_NUMBER_OF_TASK", 10))
+VALID_STATUSES = {"todo", "doing", "done"}
 
 class TaskService:
     """
-    The service layer for handling business logic related to tasks.
+    The service layer for handling all business logic related to tasks.
     """
     def __init__(self, task_repository: TaskRepository, project_repository: ProjectRepository):
-        """Initializes the service with necessary repositories."""
         self.task_repository = task_repository
         self.project_repository = project_repository
 
-    def create_task(self, title: str, project_id: int) -> Task:
-        """
-        Creates a new task for a given project after validating business rules.
-        """
-        project = self.project_repository.get_by_id(project_id)
-        if not project:
-            raise ValueError(f"Project with id {project_id} does not exist.")
+    def create_task(self, data: dict) -> Task:
+        """Creates a new task for a project after validation."""
+        project_id = data.get("project_id")
+        status = data.get("status", "todo")
+        title = data.get("title", "")
+        deadline_str = data.get("deadline")
 
-        tasks_in_project_count = self.task_repository.count_by_project(project_id) # We'll add this next
-        if tasks_in_project_count >= MAX_NUMBER_OF_TASK:
-            raise ValueError(f"Project {project_id} has reached its maximum number of tasks ({MAX_NUMBER_OF_TASK}).")
+        # --- Validation Logic from SimpleStorage ---
+        if self.project_repository.get(project_id) is None:
+            raise ValueError(f"Project with ID {project_id} does not exist.")
 
-        new_task_data = {"title": title, "project_id": project_id}
-        created_task = self.task_repository.create(new_task_data)
-        return created_task
+        if status not in VALID_STATUSES:
+            raise ValueError(f"Invalid status '{status}'. Must be one of: {VALID_STATUSES}")
+        
+        if not title or len(title.strip()) == 0:
+            raise ValueError("Task title cannot be empty.")
 
-    def get_tasks_for_project(self, project_id: int) -> list[Task]:
-        """Gets all tasks for a specific project."""
-        return self.task_repository.get_all_for_project(project_id)
+        # Validate deadline format
+        if deadline_str:
+            try:
+                datetime.datetime.strptime(deadline_str, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError("Deadline must be in YYYY-MM-DD format.")
 
-    def count_by_project(self, project_id: int) -> int:
-        """Counts the number of tasks associated with a specific project."""
-        return self.db_session.query(Task).filter(Task.project_id == project_id).count()
+        # Use the efficient repository method to check the task limit
+        tasks_in_project = self.task_repository.list_for_project(project_id)
+        if len(tasks_in_project) >= MAX_NUMBER_OF_TASK:
+            raise ValueError(f"Project {project_id} has reached its task limit ({MAX_NUMBER_OF_TASK}).")
+        # --- End of Validation Logic ---
 
-    def get_all_for_project(self, project_id: int) -> list[Task]:
-        """Gets all task records associated with a specific project."""
-        return self.db_session.query(Task).filter(Task.project_id == project_id).all()
+        return self.task_repository.add(data)
 
-    def get_tasks_for_project(self, project_id: int) -> list[Task]:
-        """
-        Gets all tasks for a specific project after verifying the project exists.
-        """
-        project = self.project_repository.get_by_id(project_id)
-        if not project:
-            raise ValueError(f"Project with id {project_id} does not exist.")
+    def edit_task(self, task_id: int, update_data: dict) -> Task:
+        """Edits an existing task."""
+        task = self.task_repository.get(task_id)
+        if not task:
+            raise ValueError(f"Task with ID {task_id} not found.")
 
-        return self.task_repository.get_all_for_project(project_id)
+        # --- Validation ---
+        new_title = update_data.get("title")
+        new_status = update_data.get("status")
+        new_deadline_str = update_data.get("deadline")
+
+        if not new_title or len(new_title.strip()) == 0:
+            raise ValueError("New title cannot be empty.")
+        if len(new_title) > 30:
+            raise ValueError("Task title cannot be more than 30 characters.")
+        if len(update_data.get("description", "")) > 150:
+            raise ValueError("Task description cannot be more than 150 characters.")
+        if new_status not in VALID_STATUSES:
+            raise ValueError(f"Invalid status '{new_status}'. Must be one of: {VALID_STATUSES}")
+        if new_deadline_str:
+            try:
+                datetime.datetime.strptime(new_deadline_str, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError("New deadline must be in YYYY-MM-DD format.")
+        # --- End of Validation ---
+
+        # Directly modify the model object
+        task.title = new_title
+        task.description = update_data.get("description")
+        task.deadline = new_deadline_str
+        task.status = new_status
+        
+        return task
+    
+    def delete_task(self, task_id: int) -> Task:
+        """Deletes a task."""
+        deleted_task = self.task_repository.delete(task_id)
+        if not deleted_task:
+            raise ValueError(f"Task with ID {task_id} not found.")
+        return deleted_task
+
+    def list_tasks_for_project(self, project_id: int) -> list[Task]:
+        """Lists all tasks for a given project."""
+        if self.project_repository.get(project_id) is None:
+            raise ValueError(f"Project with ID {project_id} does not exist.")
+        return self.task_repository.list_for_project(project_id)
