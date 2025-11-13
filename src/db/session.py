@@ -1,4 +1,5 @@
 import os
+from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -21,5 +22,22 @@ if not all(required_vars):
 DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_engine(DATABASE_URL)
+SessionFactory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+@contextmanager
+def get_db_session():
+    """
+    A context manager for providing a transactional SQLAlchemy session.
+    This handles the commit, rollback, and closing of the session.
+    """
+    db = SessionFactory()
+    try:
+        yield db
+        db.commit() # Commit the transaction if everything was successful
+    except Exception:
+        db.rollback() # Roll back the transaction in case of any error
+        raise
+    finally:
+        db.close() # Always close the session
