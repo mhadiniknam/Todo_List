@@ -4,9 +4,10 @@ from repositories.task_repository import TaskRepository
 from services.project_service import ProjectService
 from services.task_service import TaskService
 
+from commands.autoclose_overdue import start_background_scheduler, stop_background_scheduler
+
 class CLI:
     def __init__(self):
-        # The CLI no longer knows about storage. It only knows command names.
         self.commands = {
             "create-project": self.create_project,
             "list-projects": self.list_projects,
@@ -21,45 +22,46 @@ class CLI:
         }
 
     def start(self):
-        """Start the REPL loop, setting up dependencies for each command."""
-        print("=== ToDoList REPL v2.0 ===")
-        print("Type 'help' for available commands or 'exit' to quit.")
-
-        while True:
-            try:
-                command_input = input("\n> ").strip()
+        """Start the REPL loop and the integrated background scheduler."""
+        print("=== ToDoList REPL v4.0 (Integrated Scheduler) ===")
+        
+        # Start the background scheduler thread at the beginning.
+        scheduler_thread = start_background_scheduler()
+        
+        print("\nType 'help' for available commands or 'exit' to quit.")
+        
+        try:
+            while True:
+                command_input = input("> ").strip()
                 if not command_input:
                     continue
+
+                if command_input.lower() == 'exit':
+                    break
 
                 parts = command_input.split()
                 command_name = parts[0].lower()
                 args = parts[1:]
 
                 if command_name in self.commands:
-                    # This is the Dependency Injection!
-                    # For each command, we create a new session and new services.
                     with get_db_session() as db:
-                        # 1. Create Repositories
                         project_repo = ProjectRepository(db)
                         task_repo = TaskRepository(db)
-                        # 2. Create Services
                         project_service = ProjectService(project_repo)
                         task_service = TaskService(task_repo, project_repo)
-                        # 3. Call the command method, passing the services
+                        # We pass the services to the command methods
                         self.commands[command_name](args, project_service, task_service)
                 else:
-                    print(f"Unknown command: {command_name}. Type 'help'.")
-            except KeyboardInterrupt:
-                print("\nUse 'exit' to quit.")
-            except ValueError as e:
-                # Catch business errors from the service layer
-                print(f"❌ Error: {e}")
-            except Exception as e:
-                # Catch unexpected errors
-                print(f"An unexpected error occurred: {e}")
+                    print(f"Unknown command: '{command_name}'. Type 'help'.")
 
-    # --- Command Methods ---
-    # They now receive services as arguments and print results.
+        except KeyboardInterrupt:
+            print("\nCtrl+C detected. Exiting.")
+        finally:
+            # This block ensures a graceful shutdown
+            stop_background_scheduler()
+            # Wait for the background thread to finish its current sleep cycle and exit
+            scheduler_thread.join(timeout=2) 
+            print("Goodbye!")
 
     def create_project(self, args, project_service: ProjectService, _):
         if len(args) != 2:
@@ -76,7 +78,8 @@ class CLI:
             return
         print("--- Projects ---")
         for p in projects:
-            print(f"ID: {p.id} | Name: {p.name}")
+            # Added the description here
+            print(f"ID: {p.id} | Name: {p.name} | Description: {p.description}")
 
     def edit_project(self, args, project_service: ProjectService, _):
         if len(args) != 3:
@@ -120,7 +123,7 @@ class CLI:
             return
         print(f"--- Tasks for Project ID {project_id} ---")
         for t in tasks:
-            print(f"ID: {t.id} | Status: {t.status.upper()} | Title: {t.title}")
+            print(f"ID: {t.id} | Status: {t.status.upper()} | Title: {t.title} | Description: {t.description}")
 
     def edit_task(self, args, _, task_service: TaskService):
         if len(args) != 5:

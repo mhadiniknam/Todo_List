@@ -25,6 +25,7 @@ sqlalchemy = "^2.0.30"
 psycopg2-binary = "^2.9.9"
 
 # These are your development tools, including formatters and type checkers
+schedule = "^1.2.2"
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
 flake8 = "^7.0.0"

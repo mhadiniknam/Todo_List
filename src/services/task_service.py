@@ -95,3 +95,31 @@ class TaskService:
         if self.project_repository.get(project_id) is None:
             raise ValueError(f"Project with ID {project_id} does not exist.")
         return self.task_repository.list_for_project(project_id)
+
+    def close_all_overdue_tasks(self) -> list[Task]:
+        """
+        Finds all tasks across all projects that are past their deadline and 
+        are not yet 'done'. It updates their status to 'done'.
+
+        This is a batch operation intended for a scheduled job.
+
+        :return: A list of the tasks that were just closed.
+        """
+        today = datetime.date.today()
+        closed_tasks = []
+
+        all_tasks = self.task_repository.list()
+
+        for task in all_tasks:
+            if task.status == "done" or not task.deadline:
+                continue
+
+            try:
+                deadline_date = datetime.datetime.strptime(task.deadline, "%Y-%m-%d").date()
+                if deadline_date < today:
+                    task.status = "done"
+                    closed_tasks.append(task)
+            except (ValueError, TypeError):
+                continue
+        
+        return closed_tasks
