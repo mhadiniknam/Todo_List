@@ -1,199 +1,165 @@
-import argparse
-from src.Storage.Simple_Storage import SimpleStorage
+from db.session import get_db_session
+from repositories.project_repository import ProjectRepository
+from repositories.task_repository import TaskRepository
+from services.project_service import ProjectService
+from services.task_service import TaskService
 
+from commands.autoclose_overdue import start_background_scheduler, stop_background_scheduler
 
 class CLI:
     def __init__(self):
-        self.storage = SimpleStorage()
-
         self.commands = {
-            "help": self.show_help,
             "create-project": self.create_project,
-            "edit-project": self.edit_project,
-            "edit-task": self.edit_task,
-            "add-task": self.add_task,
             "list-projects": self.list_projects,
-            "list-tasks": self.list_tasks,
+            "edit-project": self.edit_project,
             "delete-project": self.delete_project,
+            "create-task": self.create_task,
+            "list-tasks": self.list_tasks_for_project,
+            "edit-task": self.edit_task,
             "delete-task": self.delete_task,
-            "update-task": self.update_task_status,
+            "help": self.show_help,
             "exit": self.exit_cli,
         }
 
     def start(self):
-        """Start the REPL."""
-        print("=== ToDoList REPL ===")
-        print("Type 'help' for available commands or 'exit' to quit.")
-
-        while True:
-            try:
-                command_input = input("\n> ").strip()
+        """Start the REPL loop and the integrated background scheduler."""
+        print("=== ToDoList REPL v4.0 (Integrated Scheduler) ===")
+        
+        # Start the background scheduler thread at the beginning.
+        scheduler_thread = start_background_scheduler()
+        
+        print("\nType 'help' for available commands or 'exit' to quit.")
+        
+        try:
+            while True:
+                command_input = input("> ").strip()
                 if not command_input:
                     continue
 
+                if command_input.lower() == 'exit':
+                    break
+
                 parts = command_input.split()
-                command = parts[0].lower()
+                command_name = parts[0].lower()
                 args = parts[1:]
 
-                if command in self.commands:
-                    self.commands[command](args)
+                if command_name in self.commands:
+                    with get_db_session() as db:
+                        project_repo = ProjectRepository(db)
+                        task_repo = TaskRepository(db)
+                        project_service = ProjectService(project_repo)
+                        task_service = TaskService(task_repo, project_repo)
+                        # We pass the services to the command methods
+                        self.commands[command_name](args, project_service, task_service)
                 else:
-                    print(
-                        f"Unknown command: {command}. Type 'help' for available commands."
-                    )
-            except KeyboardInterrupt:
-                print("\nUse 'exit' to quit.")
-            except Exception as e:
-                print(f"Error: {e}")
+                    print(f"Unknown command: '{command_name}'. Type 'help'.")
 
-    def show_help(self, args):
-        """Show available commands."""
-        print("\nAvailable commands:")
-        print("  create-project <name> <desc>                   - Create a new project")
-        print("  edit-project <prev_name> <new_name> <new_desc> - Create a new project")
-        print(
-            "edit-task <project> <task_title> <new_title> <new_desc> <new_deadline> <new_status> - Edit a Task"
-        )
-        print(
-            "  add-task <project> <title> <desc> <deadline-ARB> <status>  - Add a task to a project"
-        )
-        print("  list-projects                                  - List all projects")
-        print(
-            "  list-tasks <project>                           - List tasks in a project"
-        )
-        print("  delete-project <project>                       - Delete a project")
-        print("  delete-task <project> <task_id>                - Delete a task")
-        print("  update-task <project> <task_id> <status>       - Update task status")
-        print(
-            "  help                                           - Show this help message"
-        )
-        print("  exit                                           - Exit the application")
+        except KeyboardInterrupt:
+            print("\nCtrl+C detected. Exiting.")
+        finally:
+            # This block ensures a graceful shutdown
+            stop_background_scheduler()
+            # Wait for the background thread to finish its current sleep cycle and exit
+            scheduler_thread.join(timeout=2) 
+            print("Goodbye!")
 
-    def create_project(self, args):
-        """Create a new project."""
-        if len(args) < 2:
-            print("Usage: create-project <name> <desc>")
-            return
-
-        name = args[0]
-        desc = args[1]
-        try:
-            self.storage.create_project(name, desc)
-        except ValueError as e:
-            print(f"❌ Error: {e}")
-
-    def edit_project(self, args):
-        """Create a new project."""
-        if len(args) != 3:
-            print("edit-project <prev_name> <new_name> <new_desc>")
-            return
-
-        prev_name = args[0]
-        new_name = args[1]
-        desc = args[2]
-
-        try:
-            self.storage.edit_project(prev_name, new_name, desc)
-        except ValueError as e:
-            print(f"❌ Error: {e}")
-
-    def add_task(self, args):
-        """Add a task to a project."""
-        if len(args) < 4:
-            print("Usage: add-task <project> <title> <desc> <deadline-ARB> <status>")
-            return
-
-        project_name = args[0]
-        task_title = args[1]
-        task_desc = args[2]
-        task_deadline = args[3]
-        if len(args) == 5:
-            status = args[4]
-        else:
-            status = None
-
-        try:
-            self.storage.add_task(
-                project_name, task_title, task_desc, task_deadline, status
-            )
-        except ValueError as e:
-            print(f"❌ Error: {e}")
-
-    def list_projects(self, args=None):
-        self.storage.list_projects()
-
-    def list_tasks(self, args):
-        if len(args) != 1:
-            print("Usage: list-tasks <project>")
-            return
-
-        project_name = args[0]
-        self.storage.list_tasks(project_name)
-
-    def delete_project(self, args):
-        """Delete a project."""
-        if len(args) < 1:
-            print("Usage: delete-project <project>")
-            return
-
-        name = args[0]
-
-        try:
-            self.storage.delete_project(name)
-        except ValueError as e:
-            print(f"❌ Error: {e}")
-
-    def delete_task(self, args):
+    def create_project(self, args, project_service: ProjectService, _):
         if len(args) != 2:
-            print("Usage: delete-task <project> <task_title>")
+            print("Usage: create-project <name> <description>")
             return
+        data = {"name": args[0], "description": args[1]}
+        project = project_service.create_project(data)
+        print(f"✅ Project '{project.name}' created successfully with ID: {project.id}")
 
-        project_name = args[0]
-        task_title = args[1]
+    def list_projects(self, _, project_service: ProjectService, __):
+        projects = project_service.list_projects()
+        if not projects:
+            print("No projects found.")
+            return
+        print("--- Projects ---")
+        for p in projects:
+            # Added the description here
+            print(f"ID: {p.id} | Name: {p.name} | Description: {p.description}")
 
-        success = self.storage.delete_task(project_name, task_title)
-        if not success:
-            print("❌ Failed to delete task.")
-
-    def update_task_status(self, args):
+    def edit_project(self, args, project_service: ProjectService, _):
         if len(args) != 3:
-            print("Usage: update-task <project> <task_title> <status>")
+            print("Usage: edit-project <id> <new_name> <new_description>")
             return
+        project_id = int(args[0])
+        update_data = {"name": args[1], "description": args[2]}
+        project = project_service.edit_project(project_id, update_data)
+        print(f"✅ Project ID {project.id} updated to '{project.name}'.")
 
-        project_name = args[0]
-        task_title = args[1]
-        new_status = args[2]
-
-        success = self.storage.update_task_status(project_name, task_title, new_status)
-        if not success:
-            print(f"❌ Failed to update task status.")
-
-    def edit_task(self, args):
-        if len(args) != 6:
-            print(
-                "Usage: edit-task <project> <task_title> <new_title> <new_desc> <new_deadline> <new_status>"
-            )
+    def delete_project(self, args, project_service: ProjectService, _):
+        if len(args) != 1:
+            print("Usage: delete-project <id>")
             return
+        project_id = int(args[0])
+        project = project_service.delete_project(project_id)
+        print(f"✅ Project '{project.name}' (ID: {project.id}) deleted.")
 
-        project_name = args[0]
-        task_title = args[1]
-        new_title = args[2]
-        new_description = args[3]
-        new_deadline = args[4]
-        new_status = args[5]
+    def create_task(self, args, _, task_service: TaskService):
+        if len(args) < 3:
+            print("Usage: create-task <project_id> <title> <description> [deadline YYYY-MM-DD] [status]")
+            return
+        data = {
+            "project_id": int(args[0]),
+            "title": args[1],
+            "description": args[2],
+            "deadline": args[3] if len(args) > 3 else None,
+            "status": args[4] if len(args) > 4 else "todo",
+        }
+        task = task_service.create_task(data)
+        print(f"✅ Task '{task.title}' created for Project ID: {task.project_id}")
 
-        success = self.storage.edit_task(
-            project_name,
-            task_title,
-            new_title,
-            new_description,
-            new_deadline,
-            new_status,
-        )
-        if not success:
-            print("❌ Failed to edit task.")
+    def list_tasks_for_project(self, args, _, task_service: TaskService):
+        if len(args) != 1:
+            print("Usage: list-tasks <project_id>")
+            return
+        project_id = int(args[0])
+        tasks = task_service.list_tasks_for_project(project_id)
+        if not tasks:
+            print(f"No tasks found for Project ID {project_id}.")
+            return
+        print(f"--- Tasks for Project ID {project_id} ---")
+        for t in tasks:
+            print(f"ID: {t.id} | Status: {t.status.upper()} | Title: {t.title} | Description: {t.description}")
 
-    def exit_cli(self, args):
-        """Exit the REPL."""
+    def edit_task(self, args, _, task_service: TaskService):
+        if len(args) != 5:
+            print("Usage: edit-task <task_id> <new_title> <new_desc> <new_deadline> <new_status>")
+            return
+        task_id = int(args[0])
+        update_data = {
+            "title": args[1],
+            "description": args[2],
+            "deadline": args[3],
+            "status": args[4],
+        }
+        task = task_service.edit_task(task_id, update_data)
+        print(f"✅ Task ID {task.id} updated to '{task.title}'.")
+
+    def delete_task(self, args, _, task_service: TaskService):
+        if len(args) != 1:
+            print("Usage: delete-task <task_id>")
+            return
+        task_id = int(args[0])
+        task = task_service.delete_task(task_id)
+        print(f"✅ Task '{task.title}' (ID: {task.id}) deleted.")
+    
+    def show_help(self, *args):
+        print("\nAvailable commands:")
+        print("  create-project <name> <description>             - Create a new project")
+        print("  list-projects                                 - List all projects")
+        print("  edit-project <id> <new_name> <new_desc>       - Edit a project by its ID")
+        print("  delete-project <id>                           - Delete a project by its ID")
+        print("  create-task <proj_id> <title> <desc> ...      - Add a task to a project")
+        print("  list-tasks <proj_id>                          - List tasks in a project")
+        print("  edit-task <task_id> <title> <desc> ...        - Edit a task by its ID")
+        print("  delete-task <task_id>                         - Delete a task by its ID")
+        print("  help                                          - Show this help message")
+        print("  exit                                          - Exit the application")
+
+    def exit_cli(self, *args):
         print("Goodbye!")
         exit(0)
