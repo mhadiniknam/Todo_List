@@ -4,7 +4,8 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
+from models.project import Project
+from models.task import Task
 from alembic import context
 
 # --- THIS IS THE CRITICAL PART ---
