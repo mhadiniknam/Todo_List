@@ -1,80 +1,89 @@
 # ToDo List CLI Application
 
-A simple command-line based ToDo List manager to create projects, add tasks, and manage work effectively from the terminal.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A robust, command-line interface (CLI) application for managing projects and their associated tasks, built with a clean, layered architecture in Python. The application features an interactive REPL (Read-Eval-Print Loop) and an integrated background scheduler for automated task management.
 
 ## Features
 
-- Create, edit, and delete projects with descriptions.
-- Add, edit, update status, and delete tasks associated with projects.
-- View all projects with project IDs, names, and descriptions.
-- List all tasks in a project with their IDs, titles, statuses, and deadlines.
-- Enforce limits on the number of projects and tasks (configurable via `.env`).
-- Validate inputs including task statuses, string lengths, and deadline formats.
-- User-friendly interactive REPL interface with helpful command list.
+- **Project & Task Management**: Full CRUD (Create, Read, Update, Delete) operations for both projects and tasks.
+- **Interactive CLI**: A user-friendly REPL for managing your workflow in real-time.
+- **Persistent Storage**: Uses a PostgreSQL database to ensure your data is always saved.
+- **Database Migrations**: Powered by `Alembic` for safe and version-controlled schema changes.
+- **Automated Overdue Task Management**: An integrated background scheduler (`schedule` library running in a separate thread) automatically checks for and closes tasks that are past their deadline.
+- **Clean Architecture**: Built with a clear separation of concerns into three layers:
+    1.  **CLI (Presentation Layer)**: Handles user input and displays output.
+    2.  **Service Layer**: Contains all business logic and validation rules.
+    3.  **Repository Layer**: Manages all data access and communication with the database.
 
-## Installation
+## Getting Started
 
-1. Clone the repository:
+Follow these instructions to get the project up and running on your local machine.
+
+### Prerequisites
+
+- Python 3.10+
+- [Poetry](https://python-poetry.org/docs/#installation) for dependency management.
+- [Docker](https://www.docker.com/products/docker-desktop/) for running the database.
+
+### Installation & Setup
+
+1.  **Clone the repository:**
+    ```bash
+    git clone <your-repository-url>
+    cd <repository-directory>
+    ```
+
+2.  **Install Python dependencies:**
+    Poetry will create a virtual environment and install all necessary packages.
+    ```bash
+    poetry install
+    ```
+
+3.  **Set up environment variables:**
+    Create a `.env` file in the project root.
+    ```bash
+    cp .env.example .env
+    ```
+    Now, **edit the `.env` file** to match the database credentials you will use in the Docker command below:
+    ```ini
+    DB_USER=hadi
+    DB_PASSWORD=12345678
+    DB_HOST=localhost
+    DB_PORT=5432
+    DB_NAME=mydb
+    ```
+
+### Database Setup with Docker
+
+1.  **Run the PostgreSQL Container:**
+    Open your terminal and run the following command. This will download the official PostgreSQL image, start a container in the background, and configure it with your credentials.
+
+    ```bash
+    docker run -d --name todolist-db -e POSTGRES_USER=hadi -e POSTGRES_PASSWORD=12345678 -e POSTGRES_DB=mydb -p 5432:5432 -v todolist_data:/var/lib/postgresql/data postgres
+    ```
+    *Note: The `-v todolist_data:/var/lib/postgresql/data` flag is crucial. It saves your database data to your local machine, so it isn't lost if the container is removed.*
+
+2.  **To stop and remove the container:**
+    ```bash
+    docker stop todolist-db
+    docker rm todolist-db
+    ```
+
+### Final Step: Run Database Migrations
+
+Once your database container is running, initialize the schema using Alembic. This will create all the necessary tables.
 
 ```bash
-git clone https://github.com/yourusername/todo-list-cli.git
-cd todo-list-cli
-```
-
-2. Install dependencies (if any):
-
-```bash
-pip install -r requirements.txt
-```
-
-3. Create a `.env` file with environment variables:
-
-```
-MAX_NUMBER_OF_PROJECT=10
-MAX_NUMBER_OF_TASK=50
-```
-
-4. Run the CLI application:
-
-```bash
-python main.py
+poetry run alembic upgrade head
 ```
 
 ## Usage
 
-Start the application, then use commands such as:
+To start the interactive command-line application, run:
 
-- `create-project <name> <description>` - Create a new project.
-- `edit-project <old_name> <new_name> <new_description>` - Edit project details.
-- `delete-project <name>` - Delete a project.
-- `add-task <project> <title> <description> <deadline> <status>` - Add a task.
-- `edit-task <project> <task_title> <new_title> <new_description> <deadline> <status>` - Edit a task.
-- `delete-task <project> <task_title>` - Delete a task.
-- `list-projects` - List all projects.
-- `list-tasks <project>` - List all tasks in a project.
-- `update-task <project> <task_title> <status>` - Update task status.
-- `help` - Display available commands.
-- `exit` - Exit the application.
-
-## Contributing
-
-Contributions are welcome! Please open issues or submit pull requests for improvements.
-
-## License
-
-This project is licensed under the MIT License.
-
-***
-
-This README covers installation, usage, feature summary, and contribution guidelines — all in a clean, engaging format suitable for GitHub or other repos. Let me know if you want it customized further. 
-
-### Check the PEP8 structure with
-
-```
-poetry run flake8 src/
+```bash
+poetry run python main.py
 ```
 
-To automaticly align the coding Structure of the project 
-```
-poetry run black src
-```
+The application will start, and the background scheduler for closing overdue tasks will automatically begin its work. You will be greeted with a `>` prompt.
