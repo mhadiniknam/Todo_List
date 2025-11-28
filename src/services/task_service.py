@@ -4,6 +4,16 @@ from dotenv import load_dotenv
 from repositories.task_repository import TaskRepository
 from repositories.project_repository import ProjectRepository
 from models.task import Task
+from exceptions.service_exceptions import (
+    ProjectNotFoundError,
+    TaskLimitReachedError,
+    InvalidTaskStatusError,
+    InvalidDeadlineFormatError,
+    EmptyTitleError,
+    TitleTooLongError,
+    DescriptionTooLongError,
+    TaskNotFoundError
+)
 
 load_dotenv()
 MAX_NUMBER_OF_TASK = int(os.getenv("MAX_NUMBER_OF_TASK", 10))
@@ -26,25 +36,25 @@ class TaskService:
 
         # --- Validation Logic from SimpleStorage ---
         if self.project_repository.get(project_id) is None:
-            raise ValueError(f"Project with ID {project_id} does not exist.")
+            raise ProjectNotFoundError(f"Project with ID {project_id} does not exist.")
 
         if status not in VALID_STATUSES:
-            raise ValueError(f"Invalid status '{status}'. Must be one of: {VALID_STATUSES}")
+            raise InvalidTaskStatusError(f"Invalid status '{status}'. Must be one of: {VALID_STATUSES}")
         
         if not title or len(title.strip()) == 0:
-            raise ValueError("Task title cannot be empty.")
+            raise EmptyTitleError("Task title cannot be empty.")
 
         # Validate deadline format
         if deadline_str:
             try:
                 datetime.datetime.strptime(deadline_str, "%Y-%m-%d")
             except ValueError:
-                raise ValueError("Deadline must be in YYYY-MM-DD format.")
+                raise InvalidDeadlineFormatError("Deadline must be in YYYY-MM-DD format.")
 
         # Use the efficient repository method to check the task limit
         tasks_in_project = self.task_repository.list_for_project(project_id)
         if len(tasks_in_project) >= MAX_NUMBER_OF_TASK:
-            raise ValueError(f"Project {project_id} has reached its task limit ({MAX_NUMBER_OF_TASK}).")
+            raise TaskLimitReachedError(f"Project {project_id} has reached its task limit ({MAX_NUMBER_OF_TASK}).")
         # --- End of Validation Logic ---
 
         return self.task_repository.add(data)
@@ -87,13 +97,13 @@ class TaskService:
         """Deletes a task."""
         deleted_task = self.task_repository.delete(task_id)
         if not deleted_task:
-            raise ValueError(f"Task with ID {task_id} not found.")
+            raise TaskNotFoundError(f"Task with ID {task_id} not found.")
         return deleted_task
 
     def list_tasks_for_project(self, project_id: int) -> list[Task]:
         """Lists all tasks for a given project."""
         if self.project_repository.get(project_id) is None:
-            raise ValueError(f"Project with ID {project_id} does not exist.")
+            raise ProjectNotFoundError(f"Project with ID {project_id} does not exist.")
         return self.task_repository.list_for_project(project_id)
 
     def close_all_overdue_tasks(self) -> list[Task]:
