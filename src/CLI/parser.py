@@ -3,6 +3,20 @@ from repositories.project_repository import ProjectRepository
 from repositories.task_repository import TaskRepository
 from services.project_service import ProjectService
 from services.task_service import TaskService
+from exceptions.service_exceptions import (
+    ProjectServiceError,
+    TaskServiceError,
+    ProjectLimitReachedError,
+    ProjectNameExistsError,
+    ProjectNotFoundError,
+    TaskLimitReachedError,
+    TaskNotFoundError,
+    InvalidTaskStatusError,
+    InvalidDeadlineFormatError,
+    EmptyTitleError,
+    TitleTooLongError,
+    DescriptionTooLongError
+)
 
 from commands.autoclose_overdue import start_background_scheduler, stop_background_scheduler
 
@@ -50,7 +64,12 @@ class CLI:
                         project_service = ProjectService(project_repo)
                         task_service = TaskService(task_repo, project_repo)
                         # We pass the services to the command methods
-                        self.commands[command_name](args, project_service, task_service)
+                        try:
+                            self.commands[command_name](args, project_service, task_service)
+                        except (ProjectServiceError, TaskServiceError) as e:
+                            print(f"⚠️  Service Error: {str(e)}")
+                        except Exception as e:
+                            print(f"⚠️  Unexpected error occurred: {str(e)}")
                 else:
                     print(f"Unknown command: '{command_name}'. Type 'help'.")
 
@@ -67,9 +86,14 @@ class CLI:
         if len(args) != 2:
             print("Usage: create-project <name> <description>")
             return
-        data = {"name": args[0], "description": args[1]}
-        project = project_service.create_project(data)
-        print(f"✅ Project '{project.name}' created successfully with ID: {project.id}")
+        try:
+            data = {"name": args[0], "description": args[1]}
+            project = project_service.create_project(data)
+            print(f"✅ Project '{project.name}' created successfully with ID: {project.id}")
+        except ProjectServiceError as e:
+            print(f"⚠️  Project Error: {str(e)}")
+        except Exception as e:
+            print(f"⚠️  Unexpected error: {str(e)}")
 
     def list_projects(self, _, project_service: ProjectService, __):
         projects = project_service.list_projects()
@@ -85,67 +109,113 @@ class CLI:
         if len(args) != 3:
             print("Usage: edit-project <id> <new_name> <new_description>")
             return
-        project_id = int(args[0])
-        update_data = {"name": args[1], "description": args[2]}
-        project = project_service.edit_project(project_id, update_data)
-        print(f"✅ Project ID {project.id} updated to '{project.name}'.")
+        try:
+            project_id = int(args[0])
+            update_data = {"name": args[1], "description": args[2]}
+            project = project_service.edit_project(project_id, update_data)
+            print(f"✅ Project ID {project.id} updated to '{project.name}'.")
+        except ValueError:
+            print("⚠️  Invalid project ID. Please enter a valid number.")
+        except ProjectServiceError as e:
+            print(f"⚠️  Project Error: {str(e)}")
+        except Exception as e:
+            print(f"⚠️  Unexpected error: {str(e)}")
 
     def delete_project(self, args, project_service: ProjectService, _):
         if len(args) != 1:
             print("Usage: delete-project <id>")
             return
-        project_id = int(args[0])
-        project = project_service.delete_project(project_id)
-        print(f"✅ Project '{project.name}' (ID: {project.id}) deleted.")
+        try:
+            project_id = int(args[0])
+            project = project_service.delete_project(project_id)
+            print(f"✅ Project '{project.name}' (ID: {project.id}) deleted.")
+        except ValueError:
+            print("⚠️  Invalid project ID. Please enter a valid number.")
+        except ProjectServiceError as e:
+            print(f"⚠️  Project Error: {str(e)}")
+        except Exception as e:
+            print(f"⚠️  Unexpected error: {str(e)}")
 
     def create_task(self, args, _, task_service: TaskService):
         if len(args) < 3:
             print("Usage: create-task <project_id> <title> <description> [deadline YYYY-MM-DD] [status]")
             return
-        data = {
-            "project_id": int(args[0]),
-            "title": args[1],
-            "description": args[2],
-            "deadline": args[3] if len(args) > 3 else None,
-            "status": args[4] if len(args) > 4 else "todo",
-        }
-        task = task_service.create_task(data)
-        print(f"✅ Task '{task.title}' created for Project ID: {task.project_id}")
+        try:
+            data = {
+                "project_id": int(args[0]),
+                "title": args[1],
+                "description": args[2],
+                "deadline": args[3] if len(args) > 3 else None,
+                "status": args[4] if len(args) > 4 else "todo",
+            }
+            task = task_service.create_task(data)
+            print(f"✅ Task '{task.title}' created for Project ID: {task.project_id}")
+        except ValueError:
+            print("⚠️  Invalid project ID. Please enter a valid number.")
+        except TaskServiceError as e:
+            print(f"⚠️  Task Error: {str(e)}")
+        except ProjectServiceError as e:
+            print(f"⚠️  Project Error: {str(e)}")
+        except Exception as e:
+            print(f"⚠️  Unexpected error: {str(e)}")
 
     def list_tasks_for_project(self, args, _, task_service: TaskService):
         if len(args) != 1:
             print("Usage: list-tasks <project_id>")
             return
-        project_id = int(args[0])
-        tasks = task_service.list_tasks_for_project(project_id)
-        if not tasks:
-            print(f"No tasks found for Project ID {project_id}.")
-            return
-        print(f"--- Tasks for Project ID {project_id} ---")
-        for t in tasks:
-            print(f"ID: {t.id} | Status: {t.status.upper()} | Title: {t.title} | Description: {t.description}")
+        try:
+            project_id = int(args[0])
+            tasks = task_service.list_tasks_for_project(project_id)
+            if not tasks:
+                print(f"No tasks found for Project ID {project_id}.")
+                return
+            print(f"--- Tasks for Project ID {project_id} ---")
+            for t in tasks:
+                print(f"ID: {t.id} | Status: {t.status.upper()} | Title: {t.title} | Description: {t.description}")
+        except ValueError:
+            print("⚠️  Invalid project ID. Please enter a valid number.")
+        except TaskServiceError as e:
+            print(f"⚠️  Task Error: {str(e)}")
+        except ProjectServiceError as e:
+            print(f"⚠️  Project Error: {str(e)}")
+        except Exception as e:
+            print(f"⚠️  Unexpected error: {str(e)}")
 
     def edit_task(self, args, _, task_service: TaskService):
         if len(args) != 5:
             print("Usage: edit-task <task_id> <new_title> <new_desc> <new_deadline> <new_status>")
             return
-        task_id = int(args[0])
-        update_data = {
-            "title": args[1],
-            "description": args[2],
-            "deadline": args[3],
-            "status": args[4],
-        }
-        task = task_service.edit_task(task_id, update_data)
-        print(f"✅ Task ID {task.id} updated to '{task.title}'.")
+        try:
+            task_id = int(args[0])
+            update_data = {
+                "title": args[1],
+                "description": args[2],
+                "deadline": args[3],
+                "status": args[4],
+            }
+            task = task_service.edit_task(task_id, update_data)
+            print(f"✅ Task ID {task.id} updated to '{task.title}'.")
+        except ValueError:
+            print("⚠️  Invalid task ID or input format. Please enter a valid number.")
+        except TaskServiceError as e:
+            print(f"⚠️  Task Error: {str(e)}")
+        except Exception as e:
+            print(f"⚠️  Unexpected error: {str(e)}")
 
     def delete_task(self, args, _, task_service: TaskService):
         if len(args) != 1:
             print("Usage: delete-task <task_id>")
             return
-        task_id = int(args[0])
-        task = task_service.delete_task(task_id)
-        print(f"✅ Task '{task.title}' (ID: {task.id}) deleted.")
+        try:
+            task_id = int(args[0])
+            task = task_service.delete_task(task_id)
+            print(f"✅ Task '{task.title}' (ID: {task.id}) deleted.")
+        except ValueError:
+            print("⚠️  Invalid task ID. Please enter a valid number.")
+        except TaskServiceError as e:
+            print(f"⚠️  Task Error: {str(e)}")
+        except Exception as e:
+            print(f"⚠️  Unexpected error: {str(e)}")
     
     def show_help(self, *args):
         print("\nAvailable commands:")
