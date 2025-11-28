@@ -1,8 +1,7 @@
 from src.Task import * 
+from fastapi import FastAPI
 from src.CLI.parser import CLI 
 from src.CLI.commands import *
-import argparse
-
 
 """
 I structure the CLI as a ArgParser 
@@ -15,11 +14,24 @@ It would look like
 
 poetry run main.py create_task .... 
 """
+
+def run_api():
+    """Run the FastAPI server."""
+    import uvicorn
+    from src.api.routers  import router
+    app = FastAPI(
+            title="TodoList API",
+            description = "Manage your task and project with API",
+            version="1.0.0"
+        )
+    app.include_router(router, prefix="/api/v1")
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
 def main():
-    # ___ Parser Part ____
+    """___Main___"""
+    run_api()
     cli = CLI()
     cli.start()
-
 
 if __name__ == "__main__":
     main()
