@@ -115,3 +115,7 @@ I've organized your Mermaid diagrams into a new **Architecture Overview** sectio
 
 Each diagram is properly wrapped in ` ```mermaid ` code blocks and will render automatically when you push this to GitHub. The diagrams help visualize your clean architecture and make it easier for other developers to understand your project structure.
 
+
+### Warning
+
+The CLI is depericated - try using API instead !

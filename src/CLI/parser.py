@@ -21,6 +21,7 @@ from exceptions.service_exceptions import (
 from commands.autoclose_overdue import start_background_scheduler, stop_background_scheduler
 
 class CLI:
+    "The CLI is depericated - try using API instead !"
     def __init__(self):
         self.commands = {
             "create-project": self.create_project,
@@ -38,6 +39,7 @@ class CLI:
     def start(self):
         """Start the REPL loop and the integrated background scheduler."""
         print("=== ToDoList REPL v4.0 (Integrated Scheduler) ===")
+        print("The CLI is depericated - try using API instead !")
         
         # Start the background scheduler thread at the beginning.
         scheduler_thread = start_background_scheduler()
