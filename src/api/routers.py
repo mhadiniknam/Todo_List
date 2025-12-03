@@ -14,6 +14,8 @@ from models.project import Project
 from models.task import Task
 from services.project_service import ProjectService
 from services.task_service import TaskService
+from api.controller_schemas.responses.project_response_schema import ProjectResponse
+from api.controller_schemas.responses.task_response_schema import TaskResponse
 
 router = APIRouter()
 
@@ -35,7 +37,7 @@ def get_task_service(db: Session = Depends(get_db_session)) -> TaskService:
 
 # Project Management Endpoints
 # Corresponds to CLI command: create-project <name> <description>
-@router.post("/projects", response_model=Project)
+@router.post("/projects", response_model=ProjectResponse)
 def create_project(
     name: str,
     description: str,
@@ -53,7 +55,7 @@ def create_project(
 
 
 # Corresponds to CLI command: list-projects
-@router.get("/projects", response_model=List[Project])
+@router.get("/projects", response_model=List[ProjectResponse])
 def list_projects(
     project_service: ProjectService = Depends(get_project_service)
 ):
@@ -65,7 +67,7 @@ def list_projects(
 
 
 # Corresponds to CLI command: edit-project <id> <new_name> <new_desc>
-@router.put("/projects/{project_id}", response_model=Project)
+@router.put("/projects/{project_id}", response_model=ProjectResponse)
 def edit_project(
     project_id: int,
     name: str,
@@ -84,7 +86,7 @@ def edit_project(
 
 
 # Corresponds to CLI command: delete-project <id>
-@router.delete("/projects/{project_id}", response_model=Project)
+@router.delete("/projects/{project_id}", response_model=ProjectResponse)
 def delete_project(
     project_id: int,
     project_service: ProjectService = Depends(get_project_service)
@@ -98,7 +100,7 @@ def delete_project(
 
 # Task Management Endpoints
 # Corresponds to CLI command: create-task <project_id> <title> <description> [deadline YYYY-MM-DD] [status]
-@router.post("/tasks", response_model=Task)
+@router.post("/tasks", response_model=TaskResponse)
 def create_task(
     project_id: int,
     title: str,
@@ -122,7 +124,7 @@ def create_task(
 
 
 # Corresponds to CLI command: list-tasks <project_id>
-@router.get("/projects/{project_id}/tasks", response_model=List[Task])
+@router.get("/projects/{project_id}/tasks", response_model=List[TaskResponse])
 def list_tasks_for_project(
     project_id: int,
     task_service: TaskService = Depends(get_task_service)
@@ -135,7 +137,7 @@ def list_tasks_for_project(
 
 
 # Corresponds to CLI command: edit-task <task_id> <new_title> <new_desc> <new_deadline> <new_status>
-@router.put("/tasks/{task_id}", response_model=Task)
+@router.put("/tasks/{task_id}", response_model=TaskResponse)
 def edit_task(
     task_id: int,
     title: str,
@@ -158,7 +160,7 @@ def edit_task(
 
 
 # Corresponds to CLI command: delete-task <task_id>
-@router.delete("/tasks/{task_id}", response_model=Task)
+@router.delete("/tasks/{task_id}", response_model=TaskResponse)
 def delete_task(
     task_id: int,
     task_service: TaskService = Depends(get_task_service)
