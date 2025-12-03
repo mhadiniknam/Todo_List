@@ -1,5 +1,4 @@
 import os
-from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -26,10 +25,9 @@ engine = create_engine(DATABASE_URL)
 SessionFactory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-@contextmanager
 def get_db_session():
     """
-    A context manager for providing a transactional SQLAlchemy session.
+    A generator function for providing a transactional SQLAlchemy session.
     This handles the commit, rollback, and closing of the session.
     """
     db = SessionFactory()
