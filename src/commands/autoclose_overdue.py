@@ -29,7 +29,6 @@ def _overdue_check_job():
         except Exception as e:
             print(f"\n[Scheduler]: ❌ Error during background check: {e}")
 
-# --- THIS IS THE CORRECTED FUNCTION ---
 def _run_scheduler_loop():
     """
     This function runs in a separate thread. It executes pending jobs
